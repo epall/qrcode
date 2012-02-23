@@ -1,9 +1,19 @@
+import Data.Array
 import Data.List
 import Control.Monad
 import Test.HUnit
 import QREncode
+import QRDraw
 
 tests = test [
+    "addAlignmentPattern" ~: test [
+    (addAlignmentPattern 0 0 (blankImage 8 8)) ! (4,4) ~?= True,
+    (addAlignmentPattern 1 1 (blankImage 8 8)) ! (0,0) ~?= False
+    ],
+    "blankImage" ~: test [
+    (blankImage 1 1) ! (0,0) ~?= False,
+    indices (blankImage 2 2) ~?= [(0,0),(0,1),(1,0),(1,1)]
+    ],
     "encodeString" ~: test [
     humanReadableBinary (encodeString 104 "HELLO WORLD") ~?= "00100000010110110000101101111000110100010111001011011100010011010100001101000000111011000001000111101100"
     ],
