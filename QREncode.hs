@@ -1,6 +1,5 @@
 module QREncode
-( ECCLevel(L, M, Q, H)
-, numToBinary
+( numToBinary
 , encodePairs
 , encodeString
 , asciiValue
@@ -21,7 +20,7 @@ import Data.List
 import Data.Bits
 import Debug.Trace
 
-data ECCLevel = L | M | Q | H
+import QRShared
 
 numToBinary :: Int -> Int -> [Bool]
 numToBinary 0 _ = []

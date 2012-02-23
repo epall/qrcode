@@ -2,20 +2,14 @@ import Data.Array
 import Control.Applicative
 import Graphics.Rendering.Cairo
 
+import QRShared
 import QREncode
 import QRDraw
 
 main =
     let
-        bitmap = addData .
-            addTimingPattern (8,6) (12,6) .
-            addTimingPattern (6,8) (6,12) .
-            addBlackPixel .
-            addTypeInformation .
-            (addAlignmentPattern 0 0) .
-            (addAlignmentPattern 0 14) .
-            (addAlignmentPattern 14 0) $
-            (blankImage 21 21)
+        dataBits = stringWithErrorCorrection 1 Q "HELLO WORLD"
+        bitmap = dataToBitmap dataBits Q Mask2
         render = renderBitmap bitmap
     in do
         withImageSurface FormatRGB24 210 210 render

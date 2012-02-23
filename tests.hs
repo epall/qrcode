@@ -2,10 +2,42 @@ import Data.Array
 import Data.List
 import Control.Monad
 import Test.HUnit
+
+import QRShared
 import QREncode
 import QRDraw
 
+testBits = [False,False,True,False,False,False,False,False,False,True,False,True,True,False,True,True,False,False,False,False,True,False,True,True,False,True,True,True,True,False,False,False,True,True,False,True,False,False,False,True,False,True,True,True,False,False,True,False,True,True,False,True,True,True,False,False,False,True,False,False,True,True,False,True,False,True,False,False,False,False,True,True,False,True,False,False,False,False,False,False,True,True,True,False,True,True,False,False,False,False,False,True,False,False,False,True,False,False,False,False,False,False,False,False,True,False,True,False,True,False,False,False,False,True,False,False,True,False,False,False,False,False,False,True,False,True,True,False,False,True,False,True,False,False,True,False,True,True,False,True,True,False,False,True,False,False,True,True,False,True,True,False,True,False,False,True,True,True,False,False,False,False,False,False,False,False,False,False,False,False,True,False,True,True,True,False,False,False,False,False,True,True,True,True,True,False,True,True,False,True,False,False,False,True,True,True,True,False,True,False,False,False,False,True,False,False,False,False]
+testImage = (dataToBitmap testBits Q Mask0)
+
 tests = test [
+    "scoreSequence" ~: test [
+    scoreSequence [] ~?= 0,
+    scoreSequence [True, True, True, True] ~?= 0,
+    scoreSequence [True, True, True, True,True] ~?= 3,
+    scoreSequence [True,True,True,True,True,True] ~?= 4,
+    scoreSequence [False,False,False,False,False,False,False] ~?= 5,
+    scoreSequence [False,False,False,True,False,False,False,False,False] ~?= 3
+    ],
+    "penaltyRules" ~: test [
+    penaltyRule1 testImage ~?= 180,
+    penaltyRule2 testImage ~?= 90,
+    penaltyRule3 testImage ~?= 80,
+    penaltyRule4 testImage ~?= 0,
+    penalty      testImage ~?= 350,
+
+    penalty (dataToBitmap testBits Q Mask1) ~?= 421,
+    penalty (dataToBitmap testBits Q Mask2) ~?= 507,
+    penalty (dataToBitmap testBits Q Mask3) ~?= 443,
+    penalty (dataToBitmap testBits Q Mask4) ~?= 533,
+    penalty (dataToBitmap testBits Q Mask5) ~?= 547,
+    penalty (dataToBitmap testBits Q Mask6) ~?= 357,
+    penaltyRule1 (dataToBitmap testBits Q Mask7) ~?= 197,
+    penaltyRule2 (dataToBitmap testBits Q Mask7) ~?= 123,
+    penaltyRule3 (dataToBitmap testBits Q Mask7) ~?= 200,
+    penaltyRule4 (dataToBitmap testBits Q Mask7) ~?= 0,
+    penalty (dataToBitmap testBits Q Mask7) ~?= 520
+    ],
     "addAlignmentPattern" ~: test [
     (addAlignmentPattern 0 0 (blankImage 8 8)) ! (4,4) ~?= True,
     (addAlignmentPattern 1 1 (blankImage 8 8)) ! (0,0) ~?= False
