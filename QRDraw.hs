@@ -13,7 +13,7 @@ import QREncode
 
 type Bitmap2D = Array (Int,Int) Bool
 type Pixel = ((Int,Int),Bool)
-data Mask = MaskNone | Mask0
+data Mask = MaskNone | Mask0 | Mask1 | Mask2 | Mask3 | Mask4 | Mask5 | Mask6 | Mask7
 
 blankImage :: Int -> Int -> Bitmap2D
 blankImage width height = array ((0,0),(width-1,height-1)) [((x,y),False) | x <- [0..width-1], y <- [0..height-1]]
@@ -45,12 +45,19 @@ drawPixelsOnPath mask pixels path bitmap = bitmap // (map (applyMask mask) (zip 
 applyMask :: Mask -> Pixel -> Pixel
 
 applyMask mask (position,bit)
-    | maskSaysFlip mask position = (position,not bit)
+    | maskCondition mask position == 0 = (position,not bit)
     | otherwise = (position,bit)
 
-maskSaysFlip :: Mask -> (Int,Int) -> Bool
-maskSaysFlip MaskNone _ = False
-maskSaysFlip Mask0 (x,y) = (y + x) `mod` 2 == 0
+maskCondition :: Mask -> (Int,Int) -> Int
+maskCondition MaskNone _ = 1
+maskCondition Mask0 (x,y) = (y + x) `mod` 2
+maskCondition Mask1 (x,y) = y `mod` 2
+maskCondition Mask2 (x,y) = x `mod` 3
+maskCondition Mask3 (x,y) = (y + x) `mod` 3
+maskCondition Mask4 (x,y) = ((y `div` 2) + (x `div` 3)) `mod` 2
+maskCondition Mask5 (x,y) = ((y * x) `mod` 2) + ((y * x) `mod` 3)
+maskCondition Mask6 (x,y) = (((y * x) `mod` 2) + ((y * x) `mod` 3)) `mod` 2
+maskCondition Mask7 (x,y) = (((y + x) `mod` 2) + ((y * x) `mod` 3)) `mod` 2
 
 ------------------------------------------------------------
 typeInformation = [False, True, True, False, True, False, True, False, True, False, True, True, True, True, True]
