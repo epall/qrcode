@@ -44,11 +44,13 @@ drawPixelsOnPath mask pixels path bitmap = bitmap // (map (applyMask mask) (zip 
 
 applyMask :: Mask -> Pixel -> Pixel
 
-applyMask MaskNone p = p
-applyMask Mask0 ((x,y),bit)
-    | (y + x) `mod` 2 == 0 = ((x,y),not bit)
-    | otherwise = ((x,y),bit)
+applyMask mask (position,bit)
+    | maskSaysFlip mask position = (position,not bit)
+    | otherwise = (position,bit)
 
+maskSaysFlip :: Mask -> (Int,Int) -> Bool
+maskSaysFlip MaskNone _ = False
+maskSaysFlip Mask0 (x,y) = (y + x) `mod` 2 == 0
 
 ------------------------------------------------------------
 typeInformation = [False, True, True, False, True, False, True, False, True, False, True, True, True, True, True]
