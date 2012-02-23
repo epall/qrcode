@@ -1,6 +1,5 @@
-import Graphics.Rendering.Cairo
 import Debug.Trace
-import Char
+import Graphics.Rendering.Cairo
 
 import QREncode
 
@@ -8,6 +7,24 @@ import QREncode
 
 main = do
     withImageSurface FormatRGB24 210 210 render
+
+typeInformation = [False, True, True, False, True, False, True, False, True, False, True, True, True, True, True]
+
+formatPath1 = [(0, 8), (1, 8), (2, 8), (3, 8), (4, 8), (5, 8), (7, 8), (8, 8), (8, 7), (8,5), (8,4), (8,3),(8,2),(8,1),(8,0)]
+
+formatPath2 = [(8,20),(8,19),(8,18),(8,17),(8,16),(8,15),(8,14),(13,8),(14,8),(15,8),(16,8),(17,8),(18,8),(19,8),(20,8)]
+
+dataBits = stringWithErrorCorrection 1 Q "HELLO WORLD"
+
+upwardColumn = cycle [(-1,0),(1,-1)]
+downwardColumn = cycle [(-1,0),(1,1)]
+
+pathFrom end [] = [end]
+pathFrom (x,y) ((dx,dy):deltas) = (x,y) : pathFrom (x+dx,y+dy) deltas
+
+dataPattern = pathFrom (20, 20) $ (take 23 upwardColumn) ++ [(-1, 0)] ++ (take 23 downwardColumn) ++ [(-1,0)]  ++ (take 23 upwardColumn) ++ [(-1,0)] ++ (take 23 downwardColumn) ++ [(-1,0)] ++ (take 27 upwardColumn) ++ [(1,-2)] ++ (take 11 upwardColumn) ++ [(-1,0)] ++ (take 11 downwardColumn) ++ [(1,2)] ++ (take 27 downwardColumn)
+
+data Mask = MaskNone | Mask0
 
 render :: Surface -> IO ()
 render surface = do
@@ -23,19 +40,6 @@ render surface = do
         alignmentBox 14 0
         alignmentBox 0 14
 
-        -- format information
-        -- H EC level (all white)
-        --
-        -- mask pattern i%2=0 (horizontal stripes)
-        rectangle 2 8 1 1
-        fill
-
-        rectangle 8 18 1 1
-        fill
-
-        -- format error correction
-        -- TODO
-
         -- fixed patterns
         rectangle 6 8 1 1
         rectangle 6 10 1 1
@@ -47,6 +51,14 @@ render surface = do
 
         rectangle 8 13 1 1
         fill
+
+        -- format information
+        drawPixelsOnPath MaskNone typeInformation formatPath1
+        drawPixelsOnPath MaskNone typeInformation formatPath2
+        fill
+
+        -- data
+        drawPixelsOnPath Mask0 dataBits dataPattern
         )
     surfaceWriteToPNG surface "qr.png"
 
@@ -65,3 +77,30 @@ alignmentBox x y = do
     fill
     setMatrix currentMatrix
 
+pixel :: Int -> Int -> Render ()
+pixel x y = do
+    rectangle (fromIntegral x) (fromIntegral y) 1 1
+    fill
+
+
+drawPixelsOnPath :: Mask -> [Bool] -> [(Int, Int)] -> Render ()
+drawPixelsOnPath _ [] [] = return ()
+drawPixelsOnPath _ _ [] = return () --fail "ran out of path"
+drawPixelsOnPath _ [] _ = fail "ran out of pixels"
+
+drawPixelsOnPath mask (bit:pixels) ((x,y):path) = do
+    setSourceRGB 0 1 1
+    moveTo x y
+
+    setSourceRGB 0 0 0
+    if applyMask mask x y bit
+        then pixel x y
+        else return ()
+    drawPixelsOnPath mask pixels path
+
+applyMask :: Mask -> Int -> Int -> Bool -> Bool
+
+applyMask MaskNone x y bit = bit
+applyMask Mask0 x y bit
+    | (y + x) `mod` 2 == 0 = not bit
+    | otherwise = bit
