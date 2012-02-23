@@ -1,5 +1,4 @@
 import Data.Array
-import Debug.Trace
 import Control.Applicative
 import Graphics.Rendering.Cairo
 
@@ -9,6 +8,9 @@ import QRDraw
 main =
     let
         bitmap = addData .
+            addTimingPattern (8,6) (12,6) .
+            addTimingPattern (6,8) (6,12) .
+            addBlackPixel .
             addTypeInformation .
             (addAlignmentPattern 0 0) .
             (addAlignmentPattern 0 14) .
