@@ -9,7 +9,7 @@ import QRDraw
 main =
     let
         dataBits = stringWithErrorCorrection 1 Q "HELLO WORLD"
-        bitmap = dataToBitmap dataBits Q Mask2
+        bitmap = dataToBitmapWithBestMask dataBits Q
         render = renderBitmap bitmap
     in do
         withImageSurface FormatRGB24 210 210 render

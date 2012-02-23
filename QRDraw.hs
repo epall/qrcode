@@ -9,6 +9,7 @@ module QRDraw
 , addBlackPixel
 , addData
 , dataToBitmap
+, dataToBitmapWithBestMask
 , penaltyRule1
 , scoreSequence
 , penaltyRule2
@@ -25,7 +26,7 @@ import QRShared
 
 type Bitmap2D = Array (Int,Int) Bool
 type Pixel = ((Int,Int),Bool)
-data Mask = MaskNone | Mask0 | Mask1 | Mask2 | Mask3 | Mask4 | Mask5 | Mask6 | Mask7
+data Mask = MaskNone | Mask0 | Mask1 | Mask2 | Mask3 | Mask4 | Mask5 | Mask6 | Mask7 deriving (Eq, Show, Enum, Ord, Bounded)
 
 blankImage :: Int -> Int -> Bitmap2D
 blankImage width height = array ((0,0),(width-1,height-1)) [((x,y),False) | x <- [0..width-1], y <- [0..height-1]]
@@ -61,6 +62,11 @@ addData dataBits mask = drawPixelsOnPath mask dataBits dataPattern
 
 dataToBitmap dataBits ecclevel mask = addData dataBits mask (addTypeInformation ecclevel mask base)
 
+dataToBitmapWithBestMask :: [Bool] -> ECCLevel -> Bitmap2D
+dataToBitmapWithBestMask dataBits ecclevel = snd (head alternatives)
+    where images       = map (dataToBitmap dataBits ecclevel) [Mask0 .. Mask7]
+          scores       = map penalty images
+          alternatives = sort (zip scores images)
 --
 
 drawPixelsOnPath :: Mask -> [Bool] -> [(Int, Int)] -> Bitmap2D -> Bitmap2D
